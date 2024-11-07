@@ -1,0 +1,35 @@
+.faq {
+    h1 {
+        font-size: 2em;
+        margin-bottom: 20px;
+        text-align: center;
+        color: #333;
+    }
+
+    #faq-accordion {
+        .header {
+            background: #f7f7f7;
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background 0.3s ease;
+
+            &:hover {
+                background: #eaeaea;
+            }
+            &.active {
+                background: #fefefe;
+                border-bottom: 1px solid #ddd;
+            }
+        }
+
+        .content {
+            border: 1px solid #ddd;
+            border-top: none;
+            padding: 15px;
+            font-size: 1em;
+            background: #fff;
+        }
+    }
+}

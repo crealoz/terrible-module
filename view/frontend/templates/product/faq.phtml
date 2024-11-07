@@ -1,0 +1,22 @@
+<?php
+/** @var \Crealoz\TerribleModule\Block\FaqProduct $block */
+
+/**
+ * @var \Magento\Framework\Escaper $escaper
+ */
+$product = $block->getProduct();
+$faqCollection = $block->getFaqCollection();
+?>
+
+<?php if ($faqCollection->getSize()): ?>
+    <div class="product-faq">
+        <ul>
+            <?php foreach ($faqCollection as $faq): ?>
+                <li>
+                    <strong><?= $escaper->escapeHtml($faq->getQuestion()) ?></strong>
+                    <p><?= $escaper->escapeHtml($faq->getAnswer()) ?></p>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>

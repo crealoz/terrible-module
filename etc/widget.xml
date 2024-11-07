@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<widgets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Widget:etc/widget.xsd">
+    <widget id="faq_block_widget" class="Crealoz\TerribleModule\Block\RandomFaq" is_email_compatible="true" placeholder_image="Crealoz_TerribleModule::images/widget_faq.png">
+        <label translate="true">Bloc de FAQ</label>
+        <description translate="true">Affiche un bloc de FAQ avec les questions et réponses</description>
+        <parameters>
+            <parameter name="title" xsi:type="text" visible="true" required="false" sort_order="10">
+                <label translate="true">Titre du bloc</label>
+                <description translate="true">Titre affiché au-dessus des questions FAQ</description>
+            </parameter>
+            <parameter name="number_of_questions" xsi:type="text" visible="true" required="false" sort_order="20">
+                <label translate="true">Nombre de questions à afficher</label>
+                <description translate="true">Spécifiez le nombre de questions FAQ à afficher dans le bloc</description>
+            </parameter>
+            <parameter name="filter_questions" xsi:type="text" visible="true" required="false" sort_order="30">
+                <label translate="true">Filtre pour les questions</label>
+                <description translate="true">Spécifiez un mot-clef pour filtrer les questions</description>
+            </parameter>
+            <parameter name="template" xsi:type="select" visible="true" sort_order="40">
+                <label translate="true">Template</label>
+                <options>
+                    <option name="default" value="Crealoz_TerribleModule::random.phtml" selected="true">
+                        <label translate="true">Template par défaut</label>
+                    </option>
+                </options>
+            </parameter>
+        </parameters>
+    </widget>
+</widgets>

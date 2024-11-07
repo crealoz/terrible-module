@@ -1,0 +1,19 @@
+{
+  "name": "crealoz/terrible-module",
+  "description": "A module that does terrible things that should not pass the easy audit.",
+  "require": {
+    "php": "^8.1",
+    "ext-simplexml": "*",
+    "magento/framework": "*"
+  },
+  "type": "magento2-module",
+  "version": "1.0.0",
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Crealoz\\TerribleModule\\": ""
+    }
+  }
+}

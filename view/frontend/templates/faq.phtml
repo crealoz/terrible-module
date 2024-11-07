@@ -1,0 +1,39 @@
+<?php
+/**
+ * @var \Magento\Framework\View\Element\Template $block
+ */
+
+/**
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+/**
+ * @var \Crealoz\TerribleModule\Helper\FaqList
+ */
+$faqList = $block->helper('Crealoz\TerribleModule\Helper\FaqList');
+
+$faq = $faqList->getFaqCollection();
+
+?>
+
+<div class="faq">
+    <h1><?= __('Frequently Asked Questions') ?></h1>
+    <div id="faq-accordion" data-mage-init='
+    {
+        "accordion": {
+            "collapsible": true,
+            "active": false,
+            "openedState": "active"
+          }
+      }'>
+        <?php foreach ($faq as $question) : ?>
+            <div data-role="collapsible" class="header">
+                <div data-role="trigger">
+                    <span><?= $escaper->escapeHtml($question->getQuestion()) ?></span>
+                </div>
+            </div>
+
+            <div data-role="content" class="content"><?= $escaper->escapeHtml($question->getAnswer()) ?></div>
+        <?php endforeach; ?>
+    </div>
+</div>

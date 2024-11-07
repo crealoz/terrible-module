@@ -1,0 +1,16 @@
+<?php
+/** @var \Crealoz\TerribleModule\Block\RandomFaq $block */
+?>
+
+<?php if ($block->getRandomFaq()): ?>
+    <div class="faq-block">
+        <?php foreach ($block->getRandomFaq() as $question): ?>
+            <div class="faq-item">
+                <div class="faq-question"><?= $question['question']; ?></div>
+                <div class="faq-answer"><?= $question['answer']; ?></div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+<?php else: ?>
+    <p>Aucune question FAQ disponible.</p>
+<?php endif; ?>

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+
+    <table name="crealoz_terrible_module_faq" resource="default" engine="innodb" comment="FAQ Table">
+        <column name="faq_id" xsi:type="int" nullable="false" identity="true" unsigned="true" comment="FAQ ID"/>
+        <column name="question" xsi:type="text" nullable="false" comment="Question"/>
+        <column name="answer" xsi:type="text" nullable="false" comment="Answer"/>
+        <column name="is_active" xsi:type="smallint" nullable="false" default="1" comment="Is Active"/>
+        <column name="created_at" xsi:type="timestamp" nullable="false" default="CURRENT_TIMESTAMP" comment="Creation Time"/>
+        <column name="updated_at" xsi:type="timestamp" nullable="true" default="CURRENT_TIMESTAMP" on_update="true" comment="Update Time"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="faq_id"/>
+        </constraint>
+    </table>
+
+</schema>
