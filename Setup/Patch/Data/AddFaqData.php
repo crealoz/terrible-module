@@ -19,7 +19,7 @@ class AddFaqData implements DataPatchInterface, PatchVersionInterface
     public function apply()
     {
         $this->moduleDataSetup->getConnection()->insertMultiple(
-            $this->moduleDataSetup->getTable('crealoz_terrible_module'),
+            $this->moduleDataSetup->getTable('crealoz_terrible_module_faq'),
             [
                 ['question' => 'Quel est le délai de livraison ?', 'answer' => 'Le délai de livraison est de 3 à 5 jours ouvrables.', 'is_active' => 1],
                 ['question' => 'Est-ce qu’il y a des possibilités de retour ?', 'answer' => 'Oui, les produits peuvent être retournés dans un délai de 14 jours après réception.', 'is_active' => 1],
