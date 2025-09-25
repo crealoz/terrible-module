@@ -1,0 +1,32 @@
+name: EasyAudit – scan
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/crealoz/easyaudit:latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run EasyAudit
+        run: |
+          mkdir -p report
+          easyaudit scan \
+            --format=sarif \
+            --output=report/easyaudit-report.sarif \
+            . \
+            --exclude="vendor,generated,var,pub/static,pub/media"
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: report/easyaudit-report.sarif
