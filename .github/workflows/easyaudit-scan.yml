@@ -20,10 +20,11 @@ jobs:
       - name: Run EasyAudit
         run: |
           mkdir -p report
+          echo "PWD=$(pwd)  GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
           easyaudit scan \
             --format=sarif \
             --output=report/easyaudit-report.sarif \
-            . \
+            "$GITHUB_WORKSPACE" \
             --exclude="vendor,generated,var,pub/static,pub/media"
 
       - name: Upload SARIF
