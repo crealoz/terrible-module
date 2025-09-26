@@ -1,0 +1,138 @@
+name: "⚠️ Paid – EasyAudit PR"
+
+on:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: "Target branch for the PR"
+        required: true
+        type: string
+        default: main
+      ack_paid:
+        description: "I confirm this action is PAID and a PR will be billed"
+        required: true
+        type: boolean
+        default: false
+      confirm:
+        description: "Type exactly: I CONFIRM"
+        required: true
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  easyaudit-pr:
+    name: "Create PR via EasyAudit (paid)"
+    runs-on: ubuntu-latest
+    # Tip: add reviewers & a warning text on the environment to enforce human approval
+    environment: billable-pr
+
+    steps:
+      - name: Guardrails (confirmation & cost warning)
+        run: |
+          echo "### Billing notice" >> $GITHUB_STEP_SUMMARY
+          echo "- This run will call easyaudit-api and may incur charges." >> $GITHUB_STEP_SUMMARY
+          echo "- Triggered by: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Repo: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Base: ${{ inputs.base }}" >> $GITHUB_STEP_SUMMARY
+          [ "${{ inputs.ack_paid }}" = "true" ] || { echo "Rejected: ack_paid=false"; exit 1; }
+          [ "${{ inputs.confirm }}" = "I CONFIRM" ] || { echo "Rejected: confirmation mismatch (expected 'I CONFIRM')."; exit 1; }
+
+      - name: Checkout (base)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.base }}
+          fetch-depth: 0
+
+      - name: Run easyaudit-cli (prepare payload + call easyaudit-api)
+        id: cli
+        uses: docker://ghcr.io/crealoz/easyaudit:latest
+        env:
+          # Must be exactly "Bearer <key>:<hash>"
+          EASYAUDIT_AUTH: ${{ secrets.EASYAUDIT_AUTH }}
+          # If the CLI needs GitHub API access, it can read this token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: >
+            apply-fix
+            --type "git"
+            --base "${{ inputs.base }}"
+            --out result.json
+
+      - name: Verify CLI output and install jq
+        run: |
+          test -f result.json || { echo "result.json not found (easyaudit-cli output)"; exit 1; }
+          sudo apt-get update -y && sudo apt-get install -y jq >/dev/null
+          jq -e . result.json >/dev/null || { echo "Invalid JSON in result.json"; cat result.json; exit 1; }
+
+      - name: Extract PR metadata
+        id: meta
+        run: |
+          echo "pr_title=$(jq -r '.pr.title // "EasyAudit security fix"' result.json)" >> $GITHUB_OUTPUT
+          echo "pr_body=$(jq -r '.pr.body  // "PR generated via EasyAudit (paid)."' result.json)" >> $GITHUB_OUTPUT
+          echo "commit_message=$(jq -r '.pr.commit_message // .pr.title // "chore(easyaudit): security fixes"' result.json)" >> $GITHUB_OUTPUT
+          echo "branch=$(jq -r '.pr.branch // empty' result.json)" >> $GITHUB_OUTPUT
+
+      - name: Apply changes and push branch (if working tree changed)
+        id: push
+        run: |
+          # Determine branch name from result, or generate one
+          BRANCH="${{ steps.meta.outputs.branch }}"
+          [ -n "$BRANCH" ] || BRANCH="sec-fix/easyaudit-$(date +%s)"
+          echo "BRANCH=$BRANCH" >> $GITHUB_ENV
+
+          # If CLI already modified files in the workspace (patch_type=git), commit & push
+          if [ -n "$(git status --porcelain)" ]; then
+            git checkout -b "$BRANCH"
+            git add -A
+            git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "${{ steps.meta.outputs.commit_message }}"
+            git push -u origin "$BRANCH"
+            echo "pushed=true" >> $GITHUB_OUTPUT
+          else
+            echo "No local changes detected."
+            echo "pushed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        uses: actions/github-script@v7
+        env:
+          PR_TITLE: ${{ steps.meta.outputs.pr_title }}
+          PR_BODY: ${{ steps.meta.outputs.pr_body }}
+          BASE: ${{ inputs.base }}
+          BRANCH: ${{ env.BRANCH }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const title = process.env.PR_TITLE || "EasyAudit security fix";
+            const body  = process.env.PR_BODY  || "PR generated via EasyAudit (paid).";
+            const base  = process.env.BASE     || "main";
+            const head  = process.env.BRANCH;
+
+            if (!head) {
+              core.setFailed("Missing branch name. Ensure the CLI returns .pr.branch or local changes were pushed.");
+              return;
+            }
+
+            try {
+              const { data } = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                head,
+                base,
+                body
+              });
+              core.info(`PR created: #${data.number} ${data.html_url}`);
+              core.summary.addHeading('PR created');
+              core.summary.addRaw(`URL: ${data.html_url}`).write();
+            } catch (e) {
+              if (e.status === 422) {
+                core.warning("PR already exists or no diff between branches.");
+              } else {
+                core.setFailed(`Failed to create PR: ${e.message}`);
+              }
+            }
