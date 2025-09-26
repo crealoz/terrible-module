@@ -3,21 +3,11 @@ name: "⚠️ Paid – EasyAudit PR"
 on:
   workflow_dispatch:
     inputs:
-      base:
-        description: "Target branch for the PR"
-        required: true
-        type: string
-        default: main
       ack_paid:
         description: "I confirm this action is PAID and a PR will be billed"
         required: true
         type: boolean
         default: false
-      confirm:
-        description: "Type exactly: I CONFIRM"
-        required: true
-        type: string
-        default: ""
 
 permissions:
   contents: write
@@ -37,14 +27,12 @@ jobs:
           echo "- This run will call easyaudit-api and may incur charges." >> $GITHUB_STEP_SUMMARY
           echo "- Triggered by: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
           echo "- Repo: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Base: ${{ inputs.base }}" >> $GITHUB_STEP_SUMMARY
           [ "${{ inputs.ack_paid }}" = "true" ] || { echo "Rejected: ack_paid=false"; exit 1; }
           [ "${{ inputs.confirm }}" = "I CONFIRM" ] || { echo "Rejected: confirmation mismatch (expected 'I CONFIRM')."; exit 1; }
 
-      - name: Checkout (base)
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.base }}
           fetch-depth: 0
 
       - name: Run easyaudit-cli (prepare payload + call easyaudit-api)
@@ -59,8 +47,8 @@ jobs:
           args: >
             apply-fix
             --type "git"
-            --base "${{ inputs.base }}"
             --out result.json
+            "$GITHUB_WORKSPACE" \
 
       - name: Verify CLI output and install jq
         run: |
@@ -102,7 +90,7 @@ jobs:
         env:
           PR_TITLE: ${{ steps.meta.outputs.pr_title }}
           PR_BODY: ${{ steps.meta.outputs.pr_body }}
-          BASE: ${{ inputs.base }}
+          BASE: ${{ github.ref_name }}
           BRANCH: ${{ env.BRANCH }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
