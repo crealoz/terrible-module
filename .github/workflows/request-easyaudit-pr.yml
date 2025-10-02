@@ -82,7 +82,7 @@ jobs:
           applied="false"
           for p in 0 1 2 3 4 5 6; do
             git reset --hard >/dev/null
-            if git apply --index -p$p "$PATCH_PATH"; then
+            if git apply --index -p$p "$PATCH_PATH" --whitespace=nowarn; then
               echo "Applied with -p$p"
               echo "applied=true" >> "$GITHUB_OUTPUT"
               echo "p_level=$p" >> "$GITHUB_OUTPUT"
