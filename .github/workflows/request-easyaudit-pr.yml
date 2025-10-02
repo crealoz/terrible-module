@@ -48,6 +48,7 @@ jobs:
       - name: Commit & push (if changed)
         id: push
         run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           BRANCH="sec-fix/easyaudit-$(date +%s)"
           echo "BRANCH=$BRANCH" >> $GITHUB_ENV
           if [ -n "$(git status --porcelain)" ]; then
