@@ -97,13 +97,13 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.event.inputs.branch_name }}
+          branch: ${{ github.ref_name }}-easyaudit-fix
           commit-message: "Apply EasyAudit patch: ${{ steps.fix.outputs.patch_name }}"
-          title: ${{ github.event.inputs.pr_title }}
+          title: "EasyAudit automatic PR"
           body: |
-            ${{ github.event.inputs.pr_body }}
+            EasyAudit automatically generated this patch from branch `${{ github.ref_name }}`.
 
-            Patch: `${{ steps.fix.outputs.patch_path }}`
+            Patch file: `${{ steps.fix.outputs.patch_path }}`
             Applied with `-p${{ steps.apply.outputs.p_level }}`.
           signoff: false
           draft: false
