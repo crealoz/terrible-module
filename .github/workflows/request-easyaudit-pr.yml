@@ -64,69 +64,47 @@ jobs:
           echo "patch_name=$PATCH_NAME" >> "$GITHUB_OUTPUT"
           echo "patch_path=$PATCH_PATH" >> "$GITHUB_OUTPUT"
 
-      - name: Upload patch artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ steps.fix.outputs.patch_name }}
-          path: ${{ steps.fix.outputs.patch_path }}
-
-      - name: Commit & push (if changed) or apply patch then commit
-        id: push
-        env:
-          PATCH_PATH: ${{ steps.fix.outputs.patch_path }}
+      - name: Apply generated patch (auto -p detection)
+        id: apply
+        shell: bash
         run: |
           set -euo pipefail
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
-          BRANCH="sec-fix/easyaudit-$(date +%s)"
-          echo "BRANCH=$BRANCH" >> $GITHUB_ENV
-
-          # If fix-apply didn’t change files directly, apply the patch
-          if [ -z "$(git status --porcelain)" ]; then
-            echo "No direct changes from fix-apply; applying emitted patch: $PATCH_PATH"
-            git apply --3way --whitespace=fix --check "$PATCH_PATH" \
-              && git apply --3way --whitespace=fix "$PATCH_PATH" \
-              || { echo "Patch could not be applied cleanly."; exit 1; }
+          PATCH_PATH="${{ steps.fix.outputs.patch_path }}"
+          echo "Using patch: $PATCH_PATH"
+          # Quick no-op check: if patch applies in reverse, it means changes are already present
+          if git apply --check -R "$PATCH_PATH" 2>/dev/null; then
+            echo "Patch already applied (reverse check succeeded). Skipping apply."
+            echo "applied=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
-
-          if [ -n "$(git status --porcelain)" ]; then
-            git checkout -b "$BRANCH"
-            git add -A
-            git -c user.name="github-actions[bot]" \
-                -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-                commit -m "chore(easyaudit): security fixes (paid)"
-            git push -u origin "$BRANCH"
-            echo "pushed=true" >> $GITHUB_OUTPUT
-          else
-            echo "No local changes detected."
-            echo "pushed=false" >> $GITHUB_OUTPUT
+          applied="false"
+          for p in 0 1 2 3 4 5 6; do
+            git reset --hard >/dev/null
+            if git apply --index -p$p "$PATCH_PATH"; then
+              echo "Applied with -p$p"
+              echo "applied=true" >> "$GITHUB_OUTPUT"
+              echo "p_level=$p" >> "$GITHUB_OUTPUT"
+              break
+            fi
+          done
+          if [ "${applied:-false}" != "true" ]; then
+            echo "::error::Failed to apply patch. Check paths or p-level."
+            exit 1
           fi
 
       - name: Create Pull Request
-        if: steps.push.outputs.pushed == 'true'
-        uses: actions/github-script@v7
-        env:
-          PR_TITLE: "EasyAudit security fix"
-          PR_BODY:  "PR generated via EasyAudit (paid)."
-          BASE: ${{ github.ref_name || github.event.repository.default_branch }}
-          BRANCH: ${{ env.BRANCH }}
+        if: steps.apply.outputs.applied != 'false'
+        uses: peter-evans/create-pull-request@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const title = process.env.PR_TITLE;
-            const body  = process.env.PR_BODY;
-            const base  = process.env.BASE || "main";
-            const head  = process.env.BRANCH;
-            if (!head) { core.setFailed("Missing branch name"); return; }
-            try {
-              const { data } = await github.rest.pulls.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title, head, base, body
-              });
-              core.info(`PR created: #${data.number} ${data.html_url}`);
-              core.summary.addHeading('PR created').addRaw(`URL: ${data.html_url}`).write();
-            } catch (e) {
-              if (e.status === 422) core.warning("PR already exists or no diff between branches.");
-              else core.setFailed(`Failed to create PR: ${e.message}`);
-            }
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.event.inputs.branch_name }}
+          commit-message: "Apply EasyAudit patch: ${{ steps.fix.outputs.patch_name }}"
+          title: ${{ github.event.inputs.pr_title }}
+          body: |
+            ${{ github.event.inputs.pr_body }}
+
+            Patch: `${{ steps.fix.outputs.patch_path }}`
+            Applied with `-p${{ steps.apply.outputs.p_level }}`.
+          signoff: false
+          draft: false
+          # delete-branch: true
