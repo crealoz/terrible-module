@@ -57,8 +57,8 @@ jobs:
           PATCH_PATH=""
           if [ -f "$PATCH_NAME" ]; then
             PATCH_PATH="$PATCH_NAME"
-          elif [ -f "report/$PATCH_NAME" ]; then
-            PATCH_PATH="report/$PATCH_NAME"
+          elif [ -f "patch/$PATCH_NAME" ]; then
+            PATCH_PATH="patch/$PATCH_NAME"
           else
             PATCH_PATH="$(ls -1 **/"$PATCH_NAME" 2>/dev/null | head -n1 || true)"
           fi
