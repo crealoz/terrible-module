@@ -61,6 +61,7 @@ jobs:
           else
             echo "No local changes detected."
             echo "pushed=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create Pull Request
         if: steps.push.outputs.pushed == 'true'
@@ -77,14 +78,23 @@ jobs:
             const body  = process.env.PR_BODY;
             const base  = process.env.BASE || "main";
             const head  = process.env.BRANCH;
-            if (!head) core.setFailed("Missing branch name");
+            if (!head) {
+              core.setFailed("Missing branch name");
+              return;
+            }
             try {
               const { data } = await github.rest.pulls.create({
-                owner: context.repo.owner, repo: context.repo.repo, title, head, base, body
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title, head, base, body
               });
               core.info(`PR created: #${data.number} ${data.html_url}`);
               core.summary.addHeading('PR created').addRaw(`URL: ${data.html_url}`).write();
             } catch (e) {
-              if (e.status === 422) core.warning("PR already exists or no diff between branches.");
-              else core.setFailed(`Failed to create PR: ${e.message}`);
+              if (e.status === 422) {
+                core.warning("PR already exists or no diff between branches.");
+              }
+              else {
+                core.setFailed(`Failed to create PR: ${e.message}`);
+              }
             }
