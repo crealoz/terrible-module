@@ -19,6 +19,9 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/crealoz/easyaudit:latest
+    defaults:
+      run:
+        shell: sh
 
     steps:
       - uses: actions/checkout@v4
