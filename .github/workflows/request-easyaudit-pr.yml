@@ -48,20 +48,13 @@ jobs:
           BRANCH_NAME="${GITHUB_REF_NAME:-manual}"
           BRANCH_SAFE="$(printf '%s' "$BRANCH_NAME" | sed -E 's/[^a-zA-Z0-9._-]+/-/g')"
           TS="$(date +%Y%m%d-%H%M%S)"
-          PATCH_NAME="patch-${BRANCH_SAFE}-${TS}.patch"
+          PATCH_NAME="patch-${BRANCH_SAFE}-${TS}"
 
           # Run fix-apply with --patch-name (this will produce a patch file)
           easyaudit fix-apply report/easyaudit-report.json --confirm --patch-name="$PATCH_NAME"
 
           # Resolve patch path
-          PATCH_PATH=""
-          if [ -f "$PATCH_NAME" ]; then
-            PATCH_PATH="$PATCH_NAME"
-          elif [ -f "patches/$PATCH_NAME" ]; then
-            PATCH_PATH="patches/$PATCH_NAME"
-          else
-            PATCH_PATH="$(ls -1 **/"$PATCH_NAME" 2>/dev/null | head -n1 || true)"
-          fi
+          PATCH_PATH="patches/$PATCH_NAME.patch"
 
           if [ -z "$PATCH_PATH" ] || [ ! -f "$PATCH_PATH" ]; then
             echo "Patch not found: $PATCH_PATH"
