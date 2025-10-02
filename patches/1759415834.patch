@@ -1,0 +1,22 @@
+diff --git a/__w/terrible-module/terrible-module/Plugin/CustomerPlugin.php b/__w/terrible-module/terrible-module/Plugin/CustomerPlugin.php
+index 0000000..1111111 100644
+--- a/__w/terrible-module/terrible-module/Plugin/CustomerPlugin.php
++++ b/__w/terrible-module/terrible-module/Plugin/CustomerPlugin.php
+@@ -27,1 +27,1 @@
+-    public function aroundGetCustomerEmail($subject, $proceed)
++    public function beforeGetCustomerEmail($subject)
+@@ -31,1 +31,1 @@
+-        return $proceed();
++        return [];
+diff --git a/__w/terrible-module/terrible-module/Plugin/CustomerPlugin.php b/__w/terrible-module/terrible-module/Plugin/CustomerPlugin.php
+index 0000000..1111111 100644
+--- a/__w/terrible-module/terrible-module/Plugin/CustomerPlugin.php
++++ b/__w/terrible-module/terrible-module/Plugin/CustomerPlugin.php
+@@ -14,1 +14,1 @@
+-    public function aroundGetCustomerName($subject, $proceed)
++    public function afterGetCustomerName($subject)
+@@ -17,1 +17,0 @@
+-        $customerName = $proceed();
+@@ -18,1 +18,1 @@
+-                return 'Mr. ' . $customerName;
++                return 'Mr. ' . $result;

@@ -1,0 +1,47 @@
+[
+    {
+        "ruleId": "aroundToBeforePlugin",
+        "name": "Before Plugin",
+        "shortDescription": "This is a before plugin. The callable is invoked after other code in the function.",
+        "longDescription": "Around plugins are costly in terms of performance. If the callable is invoked after any other code in the function, it is a befor plugin. Doing so will prevent unnecessary propagation of the call through the plugin chain.",
+        "files": [
+            {
+                "file": "\/__w\/terrible-module\/terrible-module\/Plugin\/CustomerPlugin.php",
+                "startLine": 27,
+                "endLine": 31,
+                "message": "Plugin callable $proceed is invoked after other code in the function. So aroundGetCustomerEmail is a before plugin.",
+                "severity": "warning"
+            }
+        ]
+    },
+    {
+        "ruleId": "aroundToAfterPlugin",
+        "name": "After Plugin",
+        "shortDescription": "This is an after plugin. The callable is invoked before other code in the function.",
+        "longDescription": "Around plugins are costly in terms of performance. If the callable is invoked before any other code in the function, it is a after plugin. Doing so will prevent unnecessary propagation of the call through the plugin chain.",
+        "files": [
+            {
+                "file": "\/__w\/terrible-module\/terrible-module\/Plugin\/CustomerPlugin.php",
+                "startLine": 14,
+                "endLine": 18,
+                "message": "Plugin callable $proceed is invoked before other code in the function. So aroundGetCustomerName is an after plugin.",
+                "severity": "warning"
+            }
+        ]
+    },
+    {
+        "ruleId": "sameModulePlugin",
+        "name": "Same Module Plugins",
+        "shortDescription": "Plugins should not be used to modify the behavior of classes within the same module. This can lead to maintenance challenges and unexpected behaviors. Consider using preferences or direct class modifications instead.",
+        "longDescription": "Plugins are designed to modify the behavior of classes in other modules, promoting modularity and separation of concerns. Using plugins within the same module can create tight coupling between classes, making the codebase harder to maintain and understand. It is recommended to use preferences or direct class modifications for altering behavior within the same module, as these approaches are more straightforward and easier to manage.",
+        "files": [
+            {
+                "file": "\/__w\/terrible-module\/terrible-module\/etc\/di.xml",
+                "startLine": 46,
+                "endLine": 46,
+                "message": "Crealoz\\TerribleModule\\Plugin\\FaqRepositoryPlugin plugs Crealoz\\TerribleModule\\Model\\FaqRepository within the same module.",
+                "severity": "error"
+            }
+        ]
+    }
+]
