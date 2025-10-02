@@ -15,20 +15,13 @@ permissions:
 
 jobs:
   fix-and-pr:
+    if: ${{ inputs.ack_paid == true }}
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/crealoz/easyaudit:latest
     environment: billable-pr
 
     steps:
-      - name: Guardrails (confirmation & cost warning)
-        run: |
-          echo "### Billing notice" >> $GITHUB_STEP_SUMMARY
-          echo "- This run will call easyaudit-api and may incur charges." >> $GITHUB_STEP_SUMMARY
-          echo "- Triggered by: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Repo: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
-          [ "${{ inputs.ack_paid }}" = "true" ] || { echo "Rejected: ack_paid=false"; exit 1; }
-
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -50,7 +43,7 @@ jobs:
           EASYAUDIT_AUTH: ${{ secrets.EASYAUDIT_AUTH }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          php bin/easyaudit fix-apply report/easyaudit-report.json --confirm
+          easyaudit fix-apply report/easyaudit-report.json --confirm
 
       - name: Commit & push (if changed)
         id: push
