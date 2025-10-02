@@ -57,14 +57,14 @@ jobs:
           PATCH_PATH=""
           if [ -f "$PATCH_NAME" ]; then
             PATCH_PATH="$PATCH_NAME"
-          elif [ -f "patch/$PATCH_NAME" ]; then
-            PATCH_PATH="patch/$PATCH_NAME"
+          elif [ -f "patches/$PATCH_NAME" ]; then
+            PATCH_PATH="patches/$PATCH_NAME"
           else
             PATCH_PATH="$(ls -1 **/"$PATCH_NAME" 2>/dev/null | head -n1 || true)"
           fi
 
           if [ -z "$PATCH_PATH" ] || [ ! -f "$PATCH_PATH" ]; then
-            echo "Patch not found: $PATCH_NAME"
+            echo "Patch not found: $PATCH_PATH"
             exit 1
           fi
 
