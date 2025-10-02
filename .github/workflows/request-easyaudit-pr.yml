@@ -51,7 +51,7 @@ jobs:
           PATCH_NAME="patch-${BRANCH_SAFE}-${TS}.patch"
 
           # Run fix-apply with --patch-name (this will produce a patch file)
-          easyaudit fix-apply report/easyaudit-report.json --confirm --patch-name "$PATCH_NAME"
+          easyaudit fix-apply report/easyaudit-report.json --confirm --patch-name="$PATCH_NAME"
 
           # Resolve patch path
           PATCH_PATH=""
