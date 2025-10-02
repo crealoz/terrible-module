@@ -71,6 +71,7 @@ jobs:
           set -euo pipefail
           PATCH_PATH="${{ steps.fix.outputs.patch_path }}"
           echo "Using patch: $PATCH_PATH"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           # Quick no-op check: if patch applies in reverse, it means changes are already present
           if git apply --check -R "$PATCH_PATH" 2>/dev/null; then
             echo "Patch already applied (reverse check succeeded). Skipping apply."
