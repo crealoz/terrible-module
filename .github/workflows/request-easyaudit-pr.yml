@@ -111,4 +111,29 @@ jobs:
 
       - name: Create Pull Request
         if: steps.push.outputs.pushed == 'true'
-        uses: actions/gith
+        uses: actions/github-script@v7
+        env:
+          PR_TITLE: "EasyAudit security fix"
+          PR_BODY:  "PR generated via EasyAudit (paid)."
+          BASE: ${{ github.ref_name || github.event.repository.default_branch }}
+          BRANCH: ${{ env.BRANCH }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const title = process.env.PR_TITLE;
+            const body  = process.env.PR_BODY;
+            const base  = process.env.BASE || "main";
+            const head  = process.env.BRANCH;
+            if (!head) { core.setFailed("Missing branch name"); return; }
+            try {
+              const { data } = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title, head, base, body
+              });
+              core.info(`PR created: #${data.number} ${data.html_url}`);
+              core.summary.addHeading('PR created').addRaw(`URL: ${data.html_url}`).write();
+            } catch (e) {
+              if (e.status === 422) core.warning("PR already exists or no diff between branches.");
+              else core.setFailed(`Failed to create PR: ${e.message}`);
+            }
