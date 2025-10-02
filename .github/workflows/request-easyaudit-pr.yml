@@ -19,7 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/crealoz/easyaudit:latest
-    environment: billable-pr
 
     steps:
       - uses: actions/checkout@v4
@@ -43,7 +42,13 @@ jobs:
           EASYAUDIT_AUTH: ${{ secrets.EASYAUDIT_AUTH }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           easyaudit fix-apply report/easyaudit-report.json --confirm
+
+      - name: Install git
+        run: |
+          apt-get update -y
+          apt-get install -y git
 
       - name: Commit & push (if changed)
         id: push
