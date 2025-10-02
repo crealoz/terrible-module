@@ -69,9 +69,13 @@ jobs:
           set -eu
           PATCH_PATH="${{ steps.fix.outputs.patch_path }}"
           echo "Normalizing $PATCH_PATH with workspace=$GITHUB_WORKSPACE"
-          sed -i "s@$GITHUB_WORKSPACE/@@g" "$PATCH_PATH"
+          sed -i "s@a$GITHUB_WORKSPACE/@a/@g" "$PATCH_PATH"
+          sed -i "s@b$GITHUB_WORKSPACE/@b/@g" "$PATCH_PATH"
           head -n 20 "$PATCH_PATH"
 
+      - name: Apply normalized patch
+        working-directory: ${{ github.workspace }}
+        run: |
           set -eu
           PATCH_PATH="${{ steps.fix.outputs.patch_path }}"
           git apply --index -p1 "$PATCH_PATH"
