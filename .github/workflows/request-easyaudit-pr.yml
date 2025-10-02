@@ -27,30 +27,75 @@ jobs:
 
       - name: Scan (JSON)
         run: |
+          set -euo pipefail
           mkdir -p report
-          echo "PWD=$(pwd)  GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
-          # Adapte le chemin cible si besoin (ex: ../magento/app/code)
+          # Run EasyAudit scan and produce JSON output
           easyaudit scan \
             --format=json \
             --output=report/easyaudit-report.json \
             "$GITHUB_WORKSPACE" \
             --exclude="vendor,generated,var,pub/static,pub/media"
-          test -s report/easyaudit-report.json || { echo "Empty or missing JSON report"; exit 1; }
+          test -s report/easyaudit-report.json
 
-      - name: Apply fixes (paid)
+      - name: Apply fixes (paid) + generate patch file
+        id: fix
         env:
           EASYAUDIT_AUTH: ${{ secrets.EASYAUDIT_AUTH }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          easyaudit fix-apply report/easyaudit-report.json --confirm
+          # Build a safe patch name with branch name + timestamp
+          BRANCH_NAME="${GITHUB_REF_NAME:-manual}"
+          BRANCH_SAFE="$(printf '%s' "$BRANCH_NAME" | sed -E 's/[^a-zA-Z0-9._-]+/-/g')"
+          TS="$(date +%Y%m%d-%H%M%S)"
+          PATCH_NAME="patch-${BRANCH_SAFE}-${TS}.patch"
 
-      - name: Commit & push (if changed)
+          # Run fix-apply with --patch-name (this will produce a patch file)
+          easyaudit fix-apply report/easyaudit-report.json --confirm --patch-name "$PATCH_NAME"
+
+          # Resolve patch path
+          PATCH_PATH=""
+          if [ -f "$PATCH_NAME" ]; then
+            PATCH_PATH="$PATCH_NAME"
+          elif [ -f "report/$PATCH_NAME" ]; then
+            PATCH_PATH="report/$PATCH_NAME"
+          else
+            PATCH_PATH="$(ls -1 **/"$PATCH_NAME" 2>/dev/null | head -n1 || true)"
+          fi
+
+          if [ -z "$PATCH_PATH" ] || [ ! -f "$PATCH_PATH" ]; then
+            echo "Patch not found: $PATCH_NAME"
+            exit 1
+          fi
+
+          echo "patch_name=$PATCH_NAME" >> "$GITHUB_OUTPUT"
+          echo "patch_path=$PATCH_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Upload patch artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.fix.outputs.patch_name }}
+          path: ${{ steps.fix.outputs.patch_path }}
+
+      - name: Commit & push (if changed) or apply patch then commit
         id: push
+        env:
+          PATCH_PATH: ${{ steps.fix.outputs.patch_path }}
         run: |
+          set -euo pipefail
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
           BRANCH="sec-fix/easyaudit-$(date +%s)"
           echo "BRANCH=$BRANCH" >> $GITHUB_ENV
+
+          # If fix-apply didn’t change files directly, apply the patch
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No direct changes from fix-apply; applying emitted patch: $PATCH_PATH"
+            git apply --3way --whitespace=fix --check "$PATCH_PATH" \
+              && git apply --3way --whitespace=fix "$PATCH_PATH" \
+              || { echo "Patch could not be applied cleanly."; exit 1; }
+          fi
+
           if [ -n "$(git status --porcelain)" ]; then
             git checkout -b "$BRANCH"
             git add -A
@@ -66,36 +111,4 @@ jobs:
 
       - name: Create Pull Request
         if: steps.push.outputs.pushed == 'true'
-        uses: actions/github-script@v7
-        env:
-          PR_TITLE: "EasyAudit security fix"
-          PR_BODY:  "PR generated via EasyAudit (paid)."
-          BASE: ${{ github.ref_name }}
-          BRANCH: ${{ env.BRANCH }}
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const title = process.env.PR_TITLE;
-            const body  = process.env.PR_BODY;
-            const base  = process.env.BASE || "main";
-            const head  = process.env.BRANCH;
-            if (!head) {
-              core.setFailed("Missing branch name");
-              return;
-            }
-            try {
-              const { data } = await github.rest.pulls.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title, head, base, body
-              });
-              core.info(`PR created: #${data.number} ${data.html_url}`);
-              core.summary.addHeading('PR created').addRaw(`URL: ${data.html_url}`).write();
-            } catch (e) {
-              if (e.status === 422) {
-                core.warning("PR already exists or no diff between branches.");
-              }
-              else {
-                core.setFailed(`Failed to create PR: ${e.message}`);
-              }
-            }
+        uses: actions/gith
