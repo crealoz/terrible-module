@@ -16,7 +16,7 @@ jobs:
       image: ghcr.io/crealoz/easyaudit:latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Run EasyAudit
         run: |
@@ -29,6 +29,6 @@ jobs:
             --exclude="vendor,generated,var,pub/static,pub/media"
 
       - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: report/easyaudit-report.sarif
