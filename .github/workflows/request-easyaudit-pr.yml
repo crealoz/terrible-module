@@ -30,7 +30,7 @@ jobs:
           set -euo pipefail
           mkdir -p report
           # Run EasyAudit scan and produce JSON output
-          php /usr/local/bin/easyaudit.phar scan \
+          easyaudit scan \
             --format=json \
             --output=report/easyaudit-report.json \
             "$GITHUB_WORKSPACE" \
@@ -51,7 +51,7 @@ jobs:
           PATCH_NAME="patch-${BRANCH_SAFE}-${TS}"
 
           # Run fix-apply with --patch-name (this will produce a patch file)
-          php /usr/local/bin/easyaudit.phar fix-apply report/easyaudit-report.json --confirm --patch-name="$PATCH_NAME"
+          easyaudit fix-apply report/easyaudit-report.json --confirm --patch-name="$PATCH_NAME"
 
           # Resolve patch path
           PATCH_PATH="patches/$PATCH_NAME.patch"

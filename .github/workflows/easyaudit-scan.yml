@@ -22,7 +22,7 @@ jobs:
         run: |
           mkdir -p report
           echo "PWD=$(pwd)  GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
-          php /usr/local/bin/easyaudit.phar scan \
+          easyaudit scan \
             --format=sarif \
             --output=report/easyaudit-report.sarif \
             "$GITHUB_WORKSPACE" \
