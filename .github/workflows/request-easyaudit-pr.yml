@@ -30,7 +30,7 @@ jobs:
           set -euo pipefail
           mkdir -p report
           # Run EasyAudit scan and produce JSON output
-          easyaudit scan \
+          php /usr/local/bin/easyaudit.phar scan \
             --format=json \
             --output=report/easyaudit-report.json \
             "$GITHUB_WORKSPACE" \
@@ -51,7 +51,7 @@ jobs:
           PATCH_NAME="patch-${BRANCH_SAFE}-${TS}"
 
           # Run fix-apply with --patch-name (this will produce a patch file)
-          easyaudit fix-apply report/easyaudit-report.json --confirm --patch-name="$PATCH_NAME"
+          php /usr/local/bin/easyaudit.phar fix-apply report/easyaudit-report.json --confirm --patch-name="$PATCH_NAME"
 
           # Resolve patch path
           PATCH_PATH="patches/$PATCH_NAME.patch"
@@ -74,14 +74,15 @@ jobs:
           head -n 20 "$PATCH_PATH"
 
       - name: Apply normalized patch
+        id: apply
         working-directory: ${{ github.workspace }}
         run: |
           set -eu
           PATCH_PATH="${{ steps.fix.outputs.patch_path }}"
           git apply --index -p1 "$PATCH_PATH"
+          echo "applied=true" >> "$GITHUB_OUTPUT"
 
       - name: Create Pull Request
-        if: steps.apply.outputs.applied != 'false'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -92,7 +93,6 @@ jobs:
             EasyAudit automatically generated this patch from branch `${{ github.ref_name }}`.
 
             Patch file: `${{ steps.fix.outputs.patch_path }}`
-            Applied with `-p${{ steps.apply.outputs.p_level }}`.
           signoff: false
           draft: false
           # delete-branch: true
