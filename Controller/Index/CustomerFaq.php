@@ -9,8 +9,7 @@ class CustomerFaq implements HttpGetActionInterface
 {
     public function __construct(
         private readonly Session $customerSession,
-    )
-    {
+    ) {
     }
 
     public function execute()

@@ -51,4 +51,16 @@
     <type name="Magento\Customer\Model\Customer">
         <plugin name="crealoz_terrible_module_customer" type="Crealoz\TerribleModule\Plugin\CustomerPlugin"/>
     </type>
+    <type name="Magento\Framework\Model\ResourceModel\Db\AbstractDb">
+        <plugin name="crealoz_terrible_module_abstract_db" type="Crealoz\TerribleModule\Plugin\AbstractDbPlugin"/>
+    </type>
+
+    <!-- Console Commands -->
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="crealoz_terrible_things" xsi:type="object">Crealoz\TerribleModule\Console\MakeThingsTerrible</item>
+            </argument>
+        </arguments>
+    </type>
 </config>

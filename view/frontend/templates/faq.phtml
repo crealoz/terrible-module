@@ -26,7 +26,7 @@ $faq = $faqList->getFaqCollection();
             "openedState": "active"
           }
       }'>
-        <?php foreach ($faq as $question) : ?>
+        <?php foreach ($faq as $question): ?>
             <div data-role="collapsible" class="header">
                 <div data-role="trigger">
                     <span><?= $escaper->escapeHtml($question->getQuestion()) ?></span>

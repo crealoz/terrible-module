@@ -12,8 +12,7 @@ class Edit extends \Magento\Backend\App\Action
         Context $context,
         private readonly FaqRepositoryInterface $faqRepository,
         private readonly Faq $faq
-    )
-    {
+    ) {
         parent::__construct($context);
     }
 

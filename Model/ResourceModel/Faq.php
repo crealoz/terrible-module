@@ -1,4 +1,3 @@
-
 <?php
 
 namespace Crealoz\TerribleModule\Model\ResourceModel;

@@ -1,9 +1,9 @@
-
 <?php
 
 namespace Crealoz\TerribleModule\Helper;
 
 use Crealoz\TerribleModule\Model\ResourceModel\Faq\CollectionFactory;
+
 class FaqList extends \Magento\Framework\App\Helper\AbstractHelper
 {
     protected $faqCollectionFactory;

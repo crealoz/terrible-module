@@ -10,7 +10,7 @@ $categories = $block->getCategories();
 <div class="faq-categories">
     <h3><?= $escaper->escapeHtml(__('FAQ Categories')) ?></h3>
     <ul>
-        <?php foreach ($categories as $category => $count) : ?>
+        <?php foreach ($categories as $category => $count): ?>
             <li>
                 <span class="category-name"><?= $escaper->escapeHtml($category) ?></span>
                 <span class="category-count">(<?= (int)$count ?>)</span>

@@ -1,4 +1,3 @@
-
 <?php
 
 namespace Crealoz\TerribleModule\Model;
@@ -25,8 +24,7 @@ class FaqRepository implements FaqRepositoryInterface
         \Crealoz\TerribleModule\Model\ResourceModel\Faq\CollectionFactory $faqCollectionFactory,
         FaqSearchResultsInterfaceFactory                                   $searchResultsFactory,
         CollectionProcessorInterface                                       $collectionProcessor
-    )
-    {
+    ) {
         $this->resource = $resource;
         $this->faqFactory = $faqFactory;
         $this->faqCollectionFactory = $faqCollectionFactory;
