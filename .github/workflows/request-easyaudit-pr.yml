@@ -50,18 +50,16 @@ jobs:
           TS="$(date +%Y%m%d-%H%M%S)"
           PATCH_NAME="patch-${BRANCH_SAFE}-${TS}"
 
-          # Run fix-apply with --patch-name (this produces individual patch files)
-          easyaudit fix-apply report/easyaudit-report.json --confirm --patch-name="$PATCH_NAME"
+          # Run fix-apply (produces individual .patch files in subdirectories under patches/)
+          easyaudit fix-apply report/easyaudit-report.json --confirm
 
-          # Combine individual patches into a single patch file
+          # Combine all individual patches (nested in subdirs) into a single patch file
           PATCH_PATH="patches/$PATCH_NAME.patch"
-          if ls patches/*.patch 1>/dev/null 2>&1; then
-            cat patches/*.patch > "$PATCH_PATH.combined"
-            mv "$PATCH_PATH.combined" "$PATCH_PATH"
-          fi
+          find patches/ -name '*.patch' -print0 | sort -z | xargs -0 cat > "$PATCH_PATH.combined"
+          mv "$PATCH_PATH.combined" "$PATCH_PATH"
 
-          if [ ! -f "$PATCH_PATH" ]; then
-            echo "No patch files found in patches/"
+          if [ ! -s "$PATCH_PATH" ]; then
+            echo "No patch files found under patches/"
             exit 1
           fi
 
