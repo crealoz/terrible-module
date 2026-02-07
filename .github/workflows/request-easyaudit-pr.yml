@@ -86,6 +86,7 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           set -eu
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           PATCH_PATH="${{ steps.fix.outputs.patch_path }}"
           git apply --index -p1 "$PATCH_PATH"
           echo "applied=true" >> "$GITHUB_OUTPUT"
