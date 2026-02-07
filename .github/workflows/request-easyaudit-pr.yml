@@ -53,55 +53,52 @@ jobs:
           # Run fix-apply (produces individual patch files under patches/)
           easyaudit fix-apply report/easyaudit-report.json --confirm
 
-          # Debug: show what fix-apply actually created
-          echo "--- patches/ contents ---"
-          find patches/ -type f 2>/dev/null || true
-          echo "--- end ---"
-
-          # Combine all patch files (any extension, any depth) into a single patch
-          PATCH_PATH="patches/$PATCH_NAME.patch"
-          find patches/ -type f ! -name "$PATCH_NAME.patch" -print0 \
-            | sort -z \
-            | xargs -0 cat > "$PATCH_PATH" 2>/dev/null || true
-
-          if [ ! -s "$PATCH_PATH" ]; then
-            echo "No patch files found under patches/"
-            exit 1
-          fi
-
           echo "patch_name=$PATCH_NAME" >> "$GITHUB_OUTPUT"
-          echo "patch_path=$PATCH_PATH" >> "$GITHUB_OUTPUT"
 
-      - name: Normalize patch paths
-        run: |
-          set -eu
-          PATCH_PATH="${{ steps.fix.outputs.patch_path }}"
-          echo "Normalizing $PATCH_PATH with workspace=$GITHUB_WORKSPACE"
-          sed -i "s@a$GITHUB_WORKSPACE/@a/@g" "$PATCH_PATH"
-          sed -i "s@b$GITHUB_WORKSPACE/@b/@g" "$PATCH_PATH"
-          head -n 20 "$PATCH_PATH"
-
-      - name: Apply normalized patch
+      - name: Apply patches individually
         id: apply
         working-directory: ${{ github.workspace }}
         run: |
           set -eu
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          PATCH_PATH="${{ steps.fix.outputs.patch_path }}"
-          git apply --index -p1 "$PATCH_PATH"
-          echo "applied=true" >> "$GITHUB_OUTPUT"
+
+          APPLIED=0
+          for PATCH in $(find patches/ -type f | sort); do
+            echo "Applying: $PATCH"
+            # Normalize absolute workspace paths to relative
+            sed -i "s@a$GITHUB_WORKSPACE/@a/@g; s@b$GITHUB_WORKSPACE/@b/@g" "$PATCH"
+            # Try git apply first, fall back to patch command
+            if git apply --index -p1 "$PATCH" 2>/dev/null; then
+              APPLIED=$((APPLIED + 1))
+            elif git apply --index -p0 "$PATCH" 2>/dev/null; then
+              APPLIED=$((APPLIED + 1))
+            elif patch -p1 --no-backup-if-mismatch < "$PATCH" 2>/dev/null; then
+              APPLIED=$((APPLIED + 1))
+            elif patch -p0 --no-backup-if-mismatch < "$PATCH" 2>/dev/null; then
+              APPLIED=$((APPLIED + 1))
+            else
+              echo "Warning: failed to apply $PATCH"
+              echo "--- first 20 lines ---"
+              head -n 20 "$PATCH"
+              echo "--- end ---"
+            fi
+          done
+
+          echo "Applied $APPLIED patch(es)"
+          if [ "$APPLIED" -eq 0 ]; then
+            echo "No patches could be applied"
+            exit 1
+          fi
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref_name }}-easyaudit-fix
-          commit-message: "Apply EasyAudit patch: ${{ steps.fix.outputs.patch_name }}"
+          commit-message: "Apply EasyAudit fixes: ${{ steps.fix.outputs.patch_name }}"
           title: "EasyAudit automatic PR"
           body: |
-            EasyAudit automatically generated this patch from branch `${{ github.ref_name }}`.
-
-            Patch file: `${{ steps.fix.outputs.patch_path }}`
+            EasyAudit automatically generated fixes from branch `${{ github.ref_name }}`.
           signoff: false
           draft: false
           # delete-branch: true
