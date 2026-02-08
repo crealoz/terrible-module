@@ -62,24 +62,19 @@ jobs:
           set -eu
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-          # Calculate strip level: a/ + workspace path components
-          # e.g. GITHUB_WORKSPACE=/__w/repo/repo → 3 slashes → strip=4 (a + __w + repo + repo)
-          STRIP=$(echo "$GITHUB_WORKSPACE" | awk -F'/' '{print NF}')
-          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE  strip level=$STRIP"
-
           APPLIED=0
           for PATCH in $(find patches/ -type f | sort); do
             echo "Applying: $PATCH"
-            # Remove non-standard comment lines (use grep+mv to avoid sed -i issues in Alpine)
-            grep -v '^# ' "$PATCH" > "$PATCH.clean" || true
+            # Remove comment lines and normalize workspace paths (pipe to avoid sed -i issues in Alpine)
+            grep -v '^# ' "$PATCH" \
+              | sed "s|a/$GITHUB_WORKSPACE/|a/|g; s|b/$GITHUB_WORKSPACE/|b/|g" \
+              > "$PATCH.clean" || true
             mv "$PATCH.clean" "$PATCH"
-            # Show cleaned patch header for debugging
-            head -n 5 "$PATCH"
-            # Apply with calculated strip level to handle a//<workspace>/ prefix
-            if git apply --index -p"$STRIP" "$PATCH"; then
+            head -n 3 "$PATCH"
+            if git apply --index -p1 "$PATCH"; then
               APPLIED=$((APPLIED + 1))
             else
-              echo "Warning: failed to apply $PATCH (tried -p$STRIP)"
+              echo "Warning: failed to apply $PATCH"
             fi
           done
 
