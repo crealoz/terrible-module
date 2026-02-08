@@ -84,11 +84,9 @@ jobs:
             exit 1
           fi
 
-      - name: Remove duplicate git credentials
-        run: git config --unset-all http.https://github.com/.extraheader || true
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref_name }}-easyaudit-fix
