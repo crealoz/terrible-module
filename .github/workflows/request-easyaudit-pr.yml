@@ -55,6 +55,64 @@ jobs:
 
           echo "patch_name=$PATCH_NAME" >> "$GITHUB_OUTPUT"
 
+      - name: Build PR body
+        run: |
+          php -r '
+          $report = json_decode(file_get_contents("report/easyaudit-report.json"), true);
+          $branch = getenv("GITHUB_REF_NAME") ?: "unknown";
+          $workspace = rtrim(getenv("GITHUB_WORKSPACE") ?: "", "/");
+
+          // Collect rule descriptions from report
+          $ruleDefs = [];
+          foreach ($report as $key => $finding) {
+              if ($key === "metadata" || !isset($finding["ruleId"])) continue;
+              $ruleDefs[$finding["ruleId"]] = $finding["shortDescription"] ?? $finding["name"] ?? $finding["ruleId"];
+          }
+
+          // Parse patches: extract applied rules and file path per patch
+          $fileRules = [];
+          $ruleCounts = [];
+          $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator("patches/", FilesystemIterator::SKIP_DOTS));
+          foreach ($it as $f) {
+              if (!$f->isFile()) continue;
+              $content = file_get_contents($f->getPathname());
+              preg_match("/^# Applied rules:\s*(.+)$/m", $content, $m);
+              $rules = $m ? array_map("trim", explode(",", $m[1])) : [];
+              preg_match("/^--- a\/.+?\/(.+)$/m", $content, $p);
+              $path = $p[1] ?? basename($f->getPathname());
+              $path = str_replace($workspace . "/", "", $path);
+              // Strip leading / from workspace-absolute paths
+              $path = ltrim(str_replace("/" . ltrim($workspace, "/") . "/", "", "/" . $path), "/");
+              $fileRules[$path] = $rules;
+              foreach ($rules as $r) { $ruleCounts[$r] = ($ruleCounts[$r] ?? 0) + 1; }
+          }
+
+          ksort($fileRules);
+          ksort($ruleCounts);
+
+          // Build markdown
+          $md = "## Summary\n\n";
+          $md .= "EasyAudit automatically generated fixes from branch `$branch`.\n\n";
+          if ($ruleCounts) {
+              $md .= "### Applied fixes\n\n";
+              $md .= "| Rule | Description | Files |\n";
+              $md .= "|------|-------------|-------|\n";
+              foreach ($ruleCounts as $rule => $count) {
+                  $desc = $ruleDefs[$rule] ?? "";
+                  $md .= "| `$rule` | $desc | $count |\n";
+              }
+              $md .= "\n";
+          }
+          if ($fileRules) {
+              $md .= "### Modified files\n\n";
+              foreach ($fileRules as $path => $rules) {
+                  $md .= "- `$path`" . ($rules ? " — " . implode(", ", $rules) : "") . "\n";
+              }
+          }
+          file_put_contents("pr-body.md", $md);
+          echo $md;
+          '
+
       - name: Apply patches individually
         id: apply
         working-directory: ${{ github.workspace }}
@@ -84,7 +142,6 @@ jobs:
             exit 1
           fi
 
-
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
         with:
@@ -92,8 +149,7 @@ jobs:
           branch: ${{ github.ref_name }}-easyaudit-fix
           commit-message: "Apply EasyAudit fixes: ${{ steps.fix.outputs.patch_name }}"
           title: "EasyAudit automatic PR"
-          body: |
-            EasyAudit automatically generated fixes from branch `${{ github.ref_name }}`.
+          body-path: pr-body.md
           signoff: false
           draft: false
           # delete-branch: true
