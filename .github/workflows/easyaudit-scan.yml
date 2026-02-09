@@ -4,6 +4,16 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      format:
+        description: "Output format for the scan"
+        required: true
+        type: choice
+        options:
+          - sarif
+          - json
+          - html
+        default: sarif
 
 permissions:
   contents: read
@@ -15,6 +25,9 @@ jobs:
     container:
       image: ghcr.io/crealoz/easyaudit:latest
 
+    env:
+      SCAN_FORMAT: ${{ inputs.format || 'sarif' }}
+
     steps:
       - uses: actions/checkout@v6
 
@@ -22,26 +35,21 @@ jobs:
         run: |
           mkdir -p report
           easyaudit scan \
-            --format=sarif \
-            --output=report/easyaudit-report.sarif \
-            "$GITHUB_WORKSPACE" \
-            --exclude="vendor,generated,var,pub/static,pub/media"
-          easyaudit scan \
-            --format=json \
-            --output=report/easyaudit-report.json \
+            --format=$SCAN_FORMAT \
+            --output=report/easyaudit-report.$SCAN_FORMAT \
             "$GITHUB_WORKSPACE" \
             --exclude="vendor,generated,var,pub/static,pub/media"
 
       - name: Upload SARIF
+        if: env.SCAN_FORMAT == 'sarif' && (success() || failure())
         uses: github/codeql-action/upload-sarif@v4
-        if: success() || failure()
         continue-on-error: true  # Fails on private repos without GitHub Advanced Security
         with:
           sarif_file: report/easyaudit-report.sarif
 
-      - name: Upload JSON report
+      - name: Upload report artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: easyaudit-report
-          path: report/easyaudit-report.json
+          path: report/easyaudit-report.${{ env.SCAN_FORMAT }}
