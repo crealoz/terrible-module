@@ -54,6 +54,9 @@
     <type name="Magento\Framework\Model\ResourceModel\Db\AbstractDb">
         <plugin name="crealoz_terrible_module_abstract_db" type="Crealoz\TerribleModule\Plugin\AbstractDbPlugin"/>
     </type>
+    <type name="Magento\Catalog\Block\Product\View">
+        <plugin name="crealoz_terrible_module_product_view" type="Crealoz\TerribleModule\Plugin\ProductViewPlugin"/>
+    </type>
 
     <!-- Console Commands -->
     <type name="Magento\Framework\Console\CommandListInterface">

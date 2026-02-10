@@ -25,4 +25,11 @@ class LatestFaq extends Template
 
         return $collection;
     }
+
+    public function getFaqCount(): int
+    {
+        $collection = $this->faqCollectionFactory->create();
+        $collection->addFieldToFilter('is_active', 1);
+        return $collection->count();
+    }
 }

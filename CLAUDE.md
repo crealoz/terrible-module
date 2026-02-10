@@ -52,7 +52,7 @@ Admin grid (`crealoz_faq_listing.xml`) and form (`crealoz_faq_form.xml`) using M
 
 ## Intentional Anti-Patterns
 
-These issues are deliberate test cases for EasyAudit (14/16 processors covered):
+These issues are deliberate test cases for EasyAudit (16/16 processors covered):
 
 | File | Issue |
 |------|-------|
@@ -66,6 +66,8 @@ These issues are deliberate test cases for EasyAudit (14/16 processors covered):
 | `etc/frontend/di.xml` | Duplicate preference for FaqInterface |
 | `view/frontend/layout/faq_index_index.xml` | cacheable="false" block |
 | `view/frontend/templates/faq.phtml` | Helper usage in template |
+| `Model/FaqExporter.php` | N+1 query: repository getById() inside foreach loop |
+| `etc/di.xml` + `Plugin/ProductViewPlugin.php` | Plugin on frontend Block in global di.xml (wrong scope) |
 
 ## CI/CD
 

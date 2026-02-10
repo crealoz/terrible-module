@@ -18,6 +18,7 @@ $latestFaq = $block->getLatestFaq();
                 </li>
             <?php endforeach; ?>
         </ul>
+    <?php echo $this->getFaqCount() ?>
     <?php else: ?>
         <p><?= $escaper->escapeHtml(__('No FAQ available yet.')) ?></p>
     <?php endif; ?>

@@ -142,6 +142,11 @@ jobs:
             exit 1
           fi
 
+      - name: Clean up generated artifacts
+        run: |
+          rm -f pr-body.md
+          rm -rf report/ patches/
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
         with:
