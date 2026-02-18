@@ -3,7 +3,7 @@
 namespace Crealoz\TerribleModule\Controller\Adminhtml\Question;
 
 use Crealoz\TerribleModule\Api\FaqRepositoryInterface;
-use Crealoz\TerribleModule\Model\Faq;
+use Crealoz\TerribleModule\Model\FaqFactory;
 use Magento\Backend\App\Action\Context;
 
 class Edit extends \Magento\Backend\App\Action
@@ -11,7 +11,7 @@ class Edit extends \Magento\Backend\App\Action
     public function __construct(
         Context $context,
         private readonly FaqRepositoryInterface $faqRepository,
-        private readonly Faq $faq
+        private readonly FaqFactory $faqFactory
     ) {
         parent::__construct($context);
     }
@@ -29,7 +29,8 @@ class Edit extends \Magento\Backend\App\Action
             }
             $resultPage->getConfig()->getTitle()->prepend(__('Edit Question'));
         } else {
-            $this->faq->setData([]);
+            $faq = $this->faqFactory->create();
+            $faq->setData([]);
             $resultPage->getConfig()->getTitle()->prepend(__('New Question'));
         }
         $resultPage->setActiveMenu("Crealoz_TerribleModule::faq");
