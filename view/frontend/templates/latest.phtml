@@ -9,7 +9,7 @@ $latestFaq = $block->getLatestFaq();
 
 <div class="latest-faq">
     <h3><?= $escaper->escapeHtml(__('Latest Questions')) ?></h3>
-    <?php if ($latestFaq->count() > 0): ?>
+    <?php if ($latestFaq->getSize() > 0): ?>
         <ul>
             <?php foreach ($latestFaq as $faq): ?>
                 <li>
@@ -18,7 +18,7 @@ $latestFaq = $block->getLatestFaq();
                 </li>
             <?php endforeach; ?>
         </ul>
-    <?php echo $this->getFaqCount() ?>
+    <?php echo $block->getFaqCount() ?>
     <?php else: ?>
         <p><?= $escaper->escapeHtml(__('No FAQ available yet.')) ?></p>
     <?php endif; ?>
