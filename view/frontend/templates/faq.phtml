@@ -4,10 +4,6 @@
  */
 
 /**
- * @var \Magento\Framework\Escaper $escaper
- */
-
-/**
  * @var \Crealoz\TerribleModule\Helper\FaqList
  */
 $faqList = $block->helper('Crealoz\TerribleModule\Helper\FaqList');
@@ -28,12 +24,12 @@ $faq = $faqList->getFaqCollection();
       }'>
         <?php foreach ($faq as $question): ?>
             <div data-role="collapsible" class="header">
-                <div data-role="trigger">
-                    <span><?= $escaper->escapeHtml($question->getQuestion()) ?></span>
+                <div data-role="trigger" id="faq-<?= $block->escapeQuote($question->getQuestion()) ?>">
+                    <span><?= $block->escapeHtml($question->getQuestion()) ?></span>
                 </div>
             </div>
 
-            <div data-role="content" class="content"><?= $escaper->escapeHtml($question->getAnswer()) ?></div>
+            <div data-role="content" class="content"><?= $block->escapeHtml($question->getAnswer()) ?></div>
         <?php endforeach; ?>
     </div>
 </div>

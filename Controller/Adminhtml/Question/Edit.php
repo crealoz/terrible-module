@@ -5,6 +5,7 @@ namespace Crealoz\TerribleModule\Controller\Adminhtml\Question;
 use Crealoz\TerribleModule\Api\FaqRepositoryInterface;
 use Crealoz\TerribleModule\Model\Faq;
 use Magento\Backend\App\Action\Context;
+use Magento\Sales\Model\Order;
 
 class Edit extends \Magento\Backend\App\Action
 {

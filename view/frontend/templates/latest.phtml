@@ -13,13 +13,13 @@ $latestFaq = $block->getLatestFaq();
         <ul>
             <?php foreach ($latestFaq as $faq): ?>
                 <li>
-                    <strong><?= $escaper->escapeHtml($faq->getQuestion()) ?></strong>
+                    <strong><?= $block->escapeHtml($faq->getQuestion()) ?></strong>
                     <p><?= $escaper->escapeHtml($faq->getAnswer()) ?></p>
                 </li>
             <?php endforeach; ?>
         </ul>
     <?php echo $this->getFaqCount() ?>
     <?php else: ?>
-        <p><?= $escaper->escapeHtml(__('No FAQ available yet.')) ?></p>
+        <p><?= $this->escapeHtml(__('No FAQ available yet.')) ?></p>
     <?php endif; ?>
 </div>
