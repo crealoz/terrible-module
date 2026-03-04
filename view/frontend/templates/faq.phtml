@@ -1,4 +1,5 @@
 <?php
+/** @var \Magento\Framework\Escaper $escaper */
 /**
  * @var \Magento\Framework\View\Element\Template $block
  */
@@ -24,12 +25,12 @@ $faq = $faqList->getFaqCollection();
       }'>
         <?php foreach ($faq as $question): ?>
             <div data-role="collapsible" class="header">
-                <div data-role="trigger" id="faq-<?= $block->escapeQuote($question->getQuestion()) ?>">
-                    <span><?= $block->escapeHtml($question->getQuestion()) ?></span>
+                <div data-role="trigger" id="faq-<?= $escaper->escapeHtmlAttr($question->getQuestion()) ?>">
+                    <span><?= $escaper->escapeHtml($question->getQuestion()) ?></span>
                 </div>
             </div>
 
-            <div data-role="content" class="content"><?= $block->escapeHtml($question->getAnswer()) ?></div>
+            <div data-role="content" class="content"><?= $escaper->escapeHtml($question->getAnswer()) ?></div>
         <?php endforeach; ?>
     </div>
 </div>

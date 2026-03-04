@@ -66,4 +66,15 @@
             </argument>
         </arguments>
     </type>
+
+    <type name="Crealoz\TerribleModule\Console\MakeThingsTerrible" shared="false">
+        <arguments><argument name="faqModel" xsi:type="object">\Crealoz\TerribleModule\Model\Faq\Proxy</argument>
+            <argument name="state" xsi:type="object">\Magento\Framework\App\State\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Crealoz\TerribleModule\Controller\Index\CustomerFaq" shared="false">
+        <arguments><argument name="customerSession" xsi:type="object">\Magento\Customer\Model\Session\Proxy</argument>
+        </arguments>
+    </type>
 </config>

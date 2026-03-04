@@ -30,6 +30,6 @@ class LatestFaq extends Template
     {
         $collection = $this->faqCollectionFactory->create();
         $collection->addFieldToFilter('is_active', 1);
-        return $collection->count();
+        return $collection->getSize();
     }
 }

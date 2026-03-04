@@ -8,13 +8,18 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
+use Magento\User\Model\UserFactory;
 
 class MakeThingsTerrible extends Command
 {
+    private UserFactory $userFactory;
+
     public function __construct(
         protected \Crealoz\TerribleModule\Model\Faq $faqModel,
-        protected readonly State $state
+        protected readonly State $state,
+        UserFactory $userFactory
     ) {
+        $this->userFactory = $userFactory;
         parent::__construct();
     }
 
@@ -27,8 +32,8 @@ class MakeThingsTerrible extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         if ($this->state->getAreaCode() === Area::AREA_ADMINHTML) {
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-            $user = $objectManager->create('Magento\User\Model\User');
+
+            $user = $this->userFactory->create();
             $user->setId(1);
         }
         $questionHelper = $this->getHelper('question');
