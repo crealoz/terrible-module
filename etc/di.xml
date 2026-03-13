@@ -58,6 +58,13 @@
         <plugin name="crealoz_terrible_module_product_view" type="Crealoz\TerribleModule\Plugin\ProductViewPlugin"/>
     </type>
 
+    <type name="Magento\CatalogInventory\Observer\QuantityValidatorObserver">
+        <plugin name="crealoz_terrible_module_quantity_validator" type="Crealoz\TerribleModule\Plugin\QuantityValidatorPlugin"/>
+    </type>
+    <type name="Magento\Quote\Model\Quote">
+        <plugin name="crealoz_terrible_module_cart_overbooked" type="Crealoz\TerribleModule\Plugin\CartItemPlugin"/>
+    </type>
+
     <!-- Console Commands -->
     <type name="Magento\Framework\Console\CommandListInterface">
         <arguments>

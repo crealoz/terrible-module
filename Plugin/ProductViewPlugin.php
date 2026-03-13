@@ -4,9 +4,12 @@ namespace Crealoz\TerribleModule\Plugin;
 
 class ProductViewPlugin
 {
-    public function afterGetProduct($subject, $result)
-    {
-        $result->setData('has_faq', true);
+    public function aroundGetProduct(
+        $subject,
+        $callable
+    ) {
+        $result = $callable();
+        $result !== null ?? $result->setData('has_faq', true);
         return $result;
     }
 }

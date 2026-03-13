@@ -14,4 +14,12 @@
         </constraint>
     </table>
 
+    <table name="quote_item" resource="default">
+        <column name="overbooked" xsi:type="smallint" nullable="false" default="0" comment="Is Overbooked"/>
+    </table>
+
+    <table name="sales_order_item" resource="default">
+        <column name="overbooked" xsi:type="smallint" nullable="false" default="0" comment="Is Overbooked"/>
+    </table>
+
 </schema>

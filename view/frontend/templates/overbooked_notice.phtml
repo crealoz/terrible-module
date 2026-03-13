@@ -1,0 +1,14 @@
+<?php
+/**
+ * @var \Crealoz\TerribleModule\Block\OverbookedNotice $block
+ */
+?>
+
+<?php if ($block->hasOverbookedItems()): ?>
+    <div class="message warning overbooked-notice">
+        <span>
+            <?= __('Some items in your cart are overbooked and may take longer to ship.') ?>
+            <a href="<?= $block->getFaqUrl() ?>"><?= __('Learn more in our FAQ') ?></a>
+        </span>
+    </div>
+<?php endif; ?>
