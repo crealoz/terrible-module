@@ -9,17 +9,17 @@ $latestFaq = $block->getLatestFaq();
 
 <div class="latest-faq">
     <h3><?= $escaper->escapeHtml(__('Latest Questions')) ?></h3>
-    <?php if ($latestFaq->count() > 0): ?>
+    <?php if ($latestFaq->getSize() > 0): ?>
         <ul>
             <?php foreach ($latestFaq as $faq): ?>
                 <li>
-                    <strong><?= $block->escapeHtml($faq->getQuestion()) ?></strong>
+                    <strong><?= $escaper->escapeHtml($faq->getQuestion()) ?></strong>
                     <p><?= $escaper->escapeHtml($faq->getAnswer()) ?></p>
                 </li>
             <?php endforeach; ?>
         </ul>
-    <?php echo $this->getFaqCount() ?>
+    <?php echo $block->getFaqCount() ?>
     <?php else: ?>
-        <p><?= $this->escapeHtml(__('No FAQ available yet.')) ?></p>
+        <p><?= $escaper->escapeHtml(__('No FAQ available yet.')) ?></p>
     <?php endif; ?>
 </div>

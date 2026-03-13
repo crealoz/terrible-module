@@ -9,12 +9,14 @@ class CustomerPlugin
      *
      * @param $subject
      * @param $proceed
+     * @param mixed $result Result of the intercepted method
      * @return string
      */
-    public function aroundGetCustomerName($subject, $proceed)
+    public function afterGetCustomerName($subject, $result)
+
     {
-        $customerName = $proceed();
-        return 'Mr. ' . $customerName;
+                return 'Mr. ' . $result;
+
     }
 
     /**
@@ -24,9 +26,10 @@ class CustomerPlugin
      * @param $proceed
      * @return mixed
      */
-    public function aroundGetCustomerEmail($subject, $proceed)
+    public function beforeGetCustomerEmail($subject)
+
     {
         $subject->setEmail('anonymus@toto.fr');
-        return $proceed();
+        return [];
     }
 }
