@@ -2,14 +2,14 @@
 
 namespace Crealoz\TerribleModule\Block;
 
-use Crealoz\TerribleModule\Model\ResourceModel\Faq\CollectionFactory;
+use Crealoz\TerribleModule\Model\ResourceModel\Faq\Collection;
 use Magento\Framework\View\Element\Template;
 
 class FaqCategories extends Template
 {
     public function __construct(
         Template\Context $context,
-        private CollectionFactory $faqCollectionFactory,
+        private Collection $faqCollection,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -17,11 +17,10 @@ class FaqCategories extends Template
 
     public function getCategories(): array
     {
-        $collection = $this->faqCollectionFactory->create();
-        $collection->addFieldToFilter('is_active', 1);
+        $this->faqCollection->addFieldToFilter('is_active', 1);
 
         $categories = [];
-        foreach ($collection as $faq) {
+        foreach ($this->faqCollection as $faq) {
             $question = $faq->getQuestion();
             $firstWord = explode(' ', $question)[0] ?? 'General';
             $categories[$firstWord] = ($categories[$firstWord] ?? 0) + 1;
